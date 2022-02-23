@@ -1,0 +1,37 @@
+{
+  "name": "gitlab-templates",
+  "version": "0.1.0",
+  "description": "gitlab-ci YAML files",
+  "main": "Gruntfile.js",
+  "scripts": {
+    "npm:install:global": "npm install -g standard grunt-cli",
+    "setup": "npm run npm:install:global",
+    "setup:ci": "npm run npm:install:global",
+    "grunt:lint": "grunt lint --verbose --color",
+    "lint": "npm run grunt:lint",
+    "test": "npm run lint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/percebus/gitlab-templates.git"
+  },
+  "keywords": [
+    "gitlab",
+    "CI",
+    "YAML",
+    "template",
+    "files"
+  ],
+  "author": "percebus",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "bugs": {
+    "url": "https://github.com/percebus/gitlab-templates/issues"
+  },
+  "homepage": "https://github.com/percebus/gitlab-templates#readme",
+  "devDependencies": {
+    "grunt": "^1.4.1",
+    "grunt-shell": "^3.0.1",
+    "grunt-yamllint": "^0.3.0",
+    "load-grunt-tasks": "^5.1.0"
+  }
+}
