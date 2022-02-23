@@ -1,0 +1,32 @@
+
+.gradlew:
+# extends: gitlab/android/SDK/sdk(.gitlab).yml # NOTE: Implement as needed
+# variables:
+#   GRADLEW_CLI_OPTS: TODO
+  script:
+    - gradlew
+
+.gradlew:assembleDebug:
+  extends: .gradlew
+  script: gradlew assembleDebug
+
+.gradlew:app:testDebug:
+  extends: .gradlew
+  variables:
+    GRADLEW_CLI_OPTS: -Pci --console=plain
+  script:
+    - gradlew ${GRADLEW_CLI_OPTS} :app:testDebug
+
+.gradlew:bumpVersion:
+  extends: .gradlew
+  script:
+    # before bump
+    - cat version.properties
+    # after bump
+    - gradlew bumpVersion
+    - cat version.properties
+    - $(awk -F'=' '{print $2}' version.properties) > version.txt
+    - cat version.txt
+  artifacts:
+    paths:
+      - version.*

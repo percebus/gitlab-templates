@@ -1,0 +1,36 @@
+include:
+# - local: gitlab/node/npm.gitlab-ci.yml
+# - local: gitlab/bower/bower.yml
+
+
+# NOTE: npm.gitlab-ci.yml *SHOULD* be enough
+# As package.json would include a 'postinstall' with 'bower install'
+
+
+.node:npm:setup:bower:
+  extends: .node:npm:setup
+  before_script:
+    - !reference ['.node:npm:setup', before_script]
+    - !reference ['.bower:install' , before_script] # FIXME XXX? postinstall should handle it
+
+.node:npm:setup:bower:ssh:
+  extends: .node:npm:setup
+  before_script:
+    - !reference ['.git:re:ssh'    , before_script] # NOTE: for repos pulled from gitlab via bower
+    - !reference ['.node:npm:setup', before_script]
+    - !reference ['.bower:install' , before_script]
+
+.node:npm:setup:bower:reclone: # FIXME see .node:npm:setup:bower:reclone
+  extends: .node:npm:setup
+  before_script:
+    - !reference ['.git:re:clone'  , before_script] # for "git commit" (via "grunt tag")
+    - !reference ['.node:npm:setup', before_script]
+    - !reference ['.bower:install' , before_script]
+
+.node:npm:setup:bower:ssh:reclone: # XXX? .node:npm:setup:bower:reclone: SHOULD be enough
+  extends: .node:npm:setup
+  before_script:
+    - !reference ['.git:re:ssh'    , before_script]
+    - !reference ['.git:re:clone'  , before_script] # XXX? why is re-clone needed
+    - !reference ['.node:npm:setup', before_script]
+    - !reference ['.bower:install' , before_script]

@@ -1,0 +1,19 @@
+#include:
+# - local: gitlab/gitlab/rules.yml
+# - local: gitlab/git/setup.gitlab-ci.yml
+
+
+.sbt:release:
+  stage: release
+  extends:
+    - .sbt
+    - .master:on_push
+    - .git:re:clone
+  script:
+    - sbt 'release with-defaults' ${SBT_CLI_OPTS}
+    # pluck version
+    - version=$(head -n 1 version.sbt | tr " := " "\t" | awk '{print $4}' | tr -d '"' | sed -e "s/\-SNAPSHOT//")
+    - echo ${version} > version.txt
+  artifacts:
+    paths:
+      - version.*

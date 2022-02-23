@@ -1,0 +1,77 @@
+#include:
+# - local: gitlab/java/test.yml
+
+
+variables:
+  HEAP_SIZE: 8G
+  SBT_OPTS: -Xmx${HEAP_SIZE} -XX:MaxPermSize=${HEAP_SIZE} -Dsbt.global.base=sbt-cache/sbtboot -Dsbt.boot.directory=sbt-cache/boot -Dsbt.ivy.home=sbt-cache/ivy
+  SBT_CLI_OPTS: -J-DartifactoryUser=${ARTIFACTORY_REPO_USER} -J-DartifactoryPassword=${ARTIFACTORY_REPO_PASS}
+
+
+.sbt:
+# extends: TODO
+  cache: # SRC: https://leonard.io/blog/2017/05/gitlab-ci-caching-for-sbt-projects/
+    # if you want to have a separate cache per branch, uncomment the next line
+#   key: "$CI_BUILD_REF_NAME"
+#   untracked: true # XXX?
+    paths:
+      - sbt-cache/ivy/cache/
+      - sbt-cache/boot/
+      - sbt-cache/sbtboot/
+      - sbt-cache/target/
+
+.sbt:compile:
+  stage: compile
+  extends: .sbt
+  script: sbt compile ${SBT_CLI_OPTS}
+  artifacts:
+    paths:
+      - '**/target/**' # TODO? get from a gitlab/java/common.yml ?
+
+
+
+.test:reports:cobertura:
+  extends: .test:reports:junit
+# coverage:   Code coverage: 12.34
+  coverage: '/Code coverage: \d+\.\d+/'
+  artifacts:
+    reports:
+      cobertura: '**/target/scala-*/coverage-report/cobertura.xml'
+
+.test:reports:scoverage:
+# coverage:   Coverage was  [12.34%]
+  coverage: '/Coverage was \[\d+\.\d+\%\]/'
+  artifacts:
+    reports:
+      cobertura: '**/target/scala-*/scoverage-report/scoverage.xml'
+
+.test:reports:jacoco:
+  extends: .test:reports:junit
+# coverage:   Instructions: 47.98%
+  coverage: '/Instructions: \d+\.\d+\%/'
+  artifacts:
+#   reports: # TODO
+    paths:
+      - target/scala-*/jacoco/report/ # jacoco/report/aggregate/html/
+
+
+.sbt:test:coverageReport:
+  stage: test
+  extends:
+    - .sbt
+    - .test:reports:cobertura
+  script:
+    - sbt coverage test coverageReport ${SBT_CLI_OPTS}
+
+
+.sbt:jacocoAggregate:
+  stage: test
+  # coverage: FIXME
+  extends:
+    - .sbt
+    - .test:reports:jacoco
+  script:
+    - sbt jacocoAggregate ${SBT_CLI_OPTS}
+
+.test:jacoco:aggregate: # ALIAS
+  extends: .sbt:jacocoAggregate

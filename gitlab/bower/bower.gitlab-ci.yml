@@ -1,0 +1,12 @@
+#include:
+# - local: gitlab/bower/bower.yml
+# - local: gitlab/git/setup.yml
+
+
+.bower:install:ssh:
+  extends:
+#   - .bower # TODO? Just has .git_push_ssh_setup
+    - .bower:components:artifacts
+  before_script:
+    - !reference ['.git_push_ssh_setup', before_script]
+    - !reference ['.bower:install'     , before_script]

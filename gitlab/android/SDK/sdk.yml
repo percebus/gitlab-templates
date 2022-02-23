@@ -1,0 +1,22 @@
+#include:
+# - local: gitlab/image/linux/android.yml
+
+
+.android:SDK:
+  extends: .image:android
+  variables:
+    # TODO vvv Move this to docker image?
+    ANDROID_SDK_ROOT: /sdk # ~/Library/Android/sdk
+    ANDROID_HOME    : /sdk # ~/Library/Android/sdk
+#   ANDROID_AVD_HOME: ~/.android/avd
+    # TODO ^^^
+
+.android:SDK:tools:
+  extends: .android:SDK
+  before_script:
+    # TODO vvv Move this to docker image?
+    - export PATH=${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin:${PATH}
+    - export PATH=${ANDROID_SDK_ROOT}/platform-tools:${PATH}
+    - echo "PATH:"
+    - echo "${PATH}"
+    # TODO ^^^

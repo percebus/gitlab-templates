@@ -1,0 +1,23 @@
+#include:
+# - local: gitlab/git/setup.gitlab-ci.yml
+# - local: gitlab/node/npm/npm.yml
+
+
+.node:npm:setup:ssh:
+  extends: .node:npm:setup
+  before_script:
+    - !reference ['.git:re:ssh'    , before_script]
+    - !reference ['.node:npm:setup', before_script]
+
+.node:npm:setup:reclone:
+  extends: .node:npm:setup
+  before_script: # FIXME see .node:npm:setup:ssh:reclone
+    - !reference ['.git:re:clone'  , before_script] # for "git commit" (via "grunt tag")
+    - !reference ['.node:npm:setup', before_script]
+
+.node:npm:setup:ssh:reclone:
+  extends: .node:npm:setup
+  before_script: # XXX? .node:npm:setup:reclone: SHOULD be enough
+    - !reference ['.git:re:ssh'    , before_script]
+    - !reference ['.git:re:clone'  , before_script] # XXX? why is re-clone needed
+    - !reference ['.node:npm:setup', before_script]

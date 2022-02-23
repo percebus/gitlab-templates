@@ -1,0 +1,21 @@
+#include:
+# - local: gitlab/image/linux/maven.yml
+
+variables:
+  MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=${CI_PROJECT_DIR}/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
+  MAVEN_CLI_OPTS: "--batch-mode --show-version --update-snapshots --errors --fail-at-end -DinstallAtEnd=true -DdeployAtEnd=true --settings=${CI_PROJECT_DIR}.tmp/MAVEN_SETTINGS"
+
+
+.mvn:
+  extends: .image:maven-jdk
+  cache:
+    paths:
+      - .m2/repository/
+
+.mvn:verify:
+  stage: verify
+  extends: .mvn
+  script: mvn verify ${MAVEN_CLI_OPTS}
+  artifacts:
+    paths:
+      - '**/target/**'

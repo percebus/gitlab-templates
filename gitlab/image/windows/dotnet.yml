@@ -1,0 +1,10 @@
+
+# SRC: https://hub.docker.com/_/microsoft-dotnet-framework
+
+.image:dotnet:framework:sdk: # SRC: https://mcr.microsoft.com/v2/dotnet/framework/sdk/tags/list
+  image: mcr.microsoft.com/dotnet/framework/sdk:4.8
+# extends: .tags:windows
+
+.image:dotnet:framework:runtime:
+  image: mcr.microsoft.com/dotnet/framework/runtime:3.5
+# extends: .tags:windows

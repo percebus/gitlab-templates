@@ -1,0 +1,12 @@
+
+.test:reports:junit:
+  artifacts:
+    when: always
+    reports:
+      junit: '**/target/test-reports/*.xml'
+
+.test:reports:junit:cucumber:
+  artifacts:
+    when: always
+    reports:
+      junit: '**/target/cucumber-report-xml/*.xml'

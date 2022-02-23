@@ -1,0 +1,68 @@
+
+# XXX? I remember seeing "somewhere" that `only:master` was going away
+.only:refs:master:
+  only:
+    refs:
+      - master
+
+# For DAST
+.rules:branch:master:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+    - when: never # default is not to run
+
+.only:master: # ALIAS
+# extends: .rules:branch:master # TODO?
+  extends: .only:refs:master    # XXX? See above
+
+
+.only:refs:branches:
+  only:
+    refs:
+      - branches
+
+.only:branches: # ALIAS
+  extends: .only:refs:branches
+
+
+.only:refs:tags:
+  only:
+    refs:
+      - tags
+
+.only:tags: # ALIAS
+  extends: .only:refs:tags
+
+
+.only:refs:pipelines:
+  only:
+    refs:
+      - pipelines
+
+.only:pipelines: # ALIAS
+  extends: .only:refs:pipelines
+
+
+.master:on_push:
+  extends: .only:refs:master
+  except:
+#   refs: # TODO
+    - tags
+#   - branches # TODO? or XXX? 'master' is also a 'branch'
+    - schedules
+    - pipelines
+
+
+.only:refs:master:pipelines:
+  only:
+    refs:
+      - master
+      - pipelines
+  except:
+    refs:
+      - tags
+#     - branches # TODO? or XXX? 'master' is also a 'branch'
+      - schedules
+
+.only:master:pipelines: # ALIAS
+  extends: .only:refs:master:pipelines

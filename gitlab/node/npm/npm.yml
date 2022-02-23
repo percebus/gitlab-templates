@@ -1,0 +1,78 @@
+#include:
+# - local: gitlab/node/node.yml
+
+
+.node:npm:
+  extends: .node
+  after_script:
+    - cat $(find /root/.npm/_logs/*.log) # TODO? only on failure
+
+
+# NOTES:
+#  > I thought the whole purpose if "install --global" was to always get "latest"
+#  > If we don't want "latest" for something like "standard", why not make it a --save-dev package?
+.node:modules:cache:global:
+  cache:
+    paths:
+      - /root/.npm/node_modules/ # "npm install -g" (npm run setup)
+
+.node:modules:cache:all:
+  cache:
+    paths:
+      - /root/.npm/node_modules/ # "npm install -g" (npm run setup) # XXX?
+      - node_modules/
+
+
+.node:npm:setup:ci:
+  extends: .node:npm
+  before_script:
+    - npm run setup:ci
+    - npm ci
+
+# NOTE: This can be used with artifacts and/or cache
+# To save some time and NW IO on re-installing packages
+.node:npm:setup:install:
+  extends: .node:npm
+  before_script:
+    - npm run setup:ci
+    - npm install
+
+# NOTE: EXPERIMENTAL
+.node:npm:setup:install:cached:
+  extends:
+    - .node:npm:setup:install
+    - .node:modules:cache:local
+
+.node:npm:setup:
+  extends:  # ALIAS
+#   - .node:npm:setup:install:cached # TODO?
+    - .node:npm:setup:ci             # XXX?
+
+
+
+##################################
+######### Common tasks ###########
+##################################
+
+.node:npm:run:audit:
+  stage: test
+  extends: .node:npm:setup
+  script: npm audit
+  allow_failure: true
+
+.node:npm:run:lint:
+  stage: test
+  extends: .node:npm:setup
+  script: npm run lint
+
+.node:npm:run:test:
+  stage: test
+  extends: .node:npm:setup
+  script: npm test
+
+# NOTE: 'verify' is borrowed from both: 'mvn verify' and '(pre|post)-submit verification'
+# it hints that its a "build + test" stage
+.node:npm:run:verify:
+  stage: test
+  extends: .node:npm:setup
+  script: npm run verify

@@ -1,0 +1,46 @@
+
+.test:reports:junit:
+  artifacts:
+    when: always
+    reports:
+#     junit:  '**/junit/TEST-*.xml' # TODO?
+      junit: test/junit/TEST-*.xml  # XXX?
+
+.test:reports:cobertura:
+  artifacts:
+    when: always
+    reports:
+#     cobertura:  '**/cobertura/cobertura-*.xml' # TODO?
+      cobertura: test/cobertura/cobertura-*.xml  # XXX?
+
+
+.test:coverage:html:
+  artifacts:
+    when: always
+    paths:
+      - test/coverage/
+
+.test:coverage:html:public:
+  stage: public
+  before_script:
+    - rm ./public -rf
+  script:
+    - mv ./test/coverage/ ./public/
+  artifacts:
+    when: always
+    paths:
+      - public/
+
+
+.test:jasmine-istanbul:
+  # =============================== Coverage summary ===============================
+  # Statements   : 28.71% ( 2503/8719 )
+  # Branches     : 21.58% ( 647/2998 )
+  # Functions    : 26.01% ( 450/1730 )
+  # Lines        : 28.69% ( 2469/8606 )
+  # ================================================================================
+  coverage: '/Statements\s*:\s+\d+\.\d+\%/'
+  extends:
+    - .test:reports:junit
+    - .test:reports:cobertura
+    - .test:coverage:html

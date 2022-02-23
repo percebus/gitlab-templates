@@ -1,0 +1,33 @@
+#include:
+# - local: gitlab/image/linux/docker.yml
+
+# Docker-in-docker
+#
+# SEE:
+#  - GitLab : https://docs.gitlab.com/ee/ci/docker/using_docker_build.html
+#
+# ALSO READ: https://jpetazzo.github.io/2015/09/03/do-not-use-docker-in-docker-for-ci/
+
+variables:
+  DOCKER_FILE    : Dockerfile
+# DOCKER_IMG_NAME: ${CI_PROJECT_NAME} # TODO?
+  DOCKER_IMG_TAG : latest
+  DOCKER_FULL_TAG: ${DOCKER_REGISTRY}/${DOCKER_ORG}/${DOCKER_IMG_NAME}:${DOCKER_IMG_TAG}
+  DOCKER_CLI_OPTS: --debug
+
+.docker:session:
+  extends: .image:docker
+  before_script:
+    # SRC: https://stackoverflow.com/a/51518255/1361858
+    - echo "${DOCKER_PASSWORD}" | docker ${DOCKER_CLI_OPTS} login ${DOCKER_REGISTRY}  --username ${DOCKER_USERNAME}  --password-stdin
+  after_script:
+    - docker ${DOCKER_CLI_OPTS} logout ${DOCKER_REGISTRY}
+
+.docker:publish:
+  extends: .docker:session
+  script:
+    - echo "DOCKER_FULL_TAG = ${DOCKER_FULL_TAG}"
+    - full_tag=${DOCKER_REGISTRY}/${DOCKER_ORG}/${DOCKER_IMG_NAME}:${DOCKER_IMG_TAG}
+    - echo "full_tag = ${full_tag}"
+    - docker ${DOCKER_CLI_OPTS} build --file ${DOCKER_FILE} --tag ${full_tag} .
+    - docker ${DOCKER_CLI_OPTS} push ${full_tag}

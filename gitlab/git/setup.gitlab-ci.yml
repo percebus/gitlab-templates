@@ -1,0 +1,11 @@
+#include:
+# - local: gitlab/git/setup.yml
+# - local: gitlab/git/git_clone_again.yml
+
+# TODO? RENAME?
+# - .git:allow:commit ?
+# - .git:commit:allow ?
+.git:re:ssh:clone:
+  before_script: # XXX HACK over HACK! pick 1 or another!
+    - !reference ['.git:re:ssh'  , before_script]
+    - !reference ['.git:re:clone', before_script]

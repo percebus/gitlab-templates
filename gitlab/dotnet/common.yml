@@ -1,0 +1,20 @@
+
+.Configuration:Debug:
+  variables:
+    CONFIGURATION: Debug
+
+.Configuration:Release:
+  variables:
+    CONFIGURATION: Release
+
+
+.WORKSPACE:bin:
+  variables:
+    WORKSPACE: ${PROJECT}/bin/${CONFIGURATION}
+  before_script:
+    - dir
+    - cd ${WORKSPACE}
+    - dir
+# artifacts:
+#   paths: # TODO?
+#     - ${WORKSPACE}

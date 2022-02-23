@@ -1,0 +1,6 @@
+
+.image:python:
+  image: python:3.7
+
+.image:python-nodejs:
+  image: nikolaik/python-nodejs:python3.7-nodejs14

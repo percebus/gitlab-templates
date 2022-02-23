@@ -1,0 +1,25 @@
+#include:
+# - local: gitlab/image/windows/dotnet.yml
+
+
+.NuGet:packages:cache:
+  cache:  # FIXME? "There is not enough space on the disk."
+    paths:
+      - packages/
+
+.NuGet:packages:artifacts:
+  artifacts:
+    untracked: true # **/packages/
+
+.NuGet:packages:
+  extends:
+#   - .NuGet:packages:cache     # TODO?
+    - .NuGet:packages:artifacts # XXX? use cache?
+
+.NuGet:restore:
+  stage: packages
+  extends:
+    - .image:dotnet:framework:sdk
+    - .NuGet:packages
+  script:
+    - NuGet.exe restore ${SOLUTION}

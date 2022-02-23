@@ -1,0 +1,92 @@
+#include:
+# - local: gitlab/image/linux/helm.yml
+
+
+.helm:
+  extends: .image:helm:2x
+  variables:
+    HELM_CHART   : ./
+    HELM_CLI_OPTS: --debug
+
+
+.helm:install: # XXX Just use .helm:setup
+  extends:
+    - .helm
+  variables:
+    PLATFORM: 'linux-amd64'
+  before_script:
+    # mkdir bin
+    - rm ./bin/* -rf
+    - mkdir -p bin
+    - cd bin
+    #
+    # download
+    - label="helm-v${HELM_VERSION}-${PLATFORM}"
+    - echo "label=${label}"
+    - url="https://get.helm.sh/${label}.tar.gz --output ./pkg.tar.gz"
+    - echo ${url}
+    - curl ${url} --output ./pkg.tar.gz
+    #
+    # install
+    - gunzip ./pkg.tar.gz
+    - tar -xvf ./pkg.tar
+    - rm ./pkg.tar
+    - mv ./${PLATFORM}/* ./
+    - cd ..
+    - export PATH=./bin:${PATH}
+    #
+    # test
+    - helm --help
+
+.helm:setup:
+  extends: .helm
+  variables:
+    HELM_REPO_NAME: FIXME
+    HELM_REPO_URL : ${ARTIFACTORY_REPO_URL}/${HELM_REPO_NAME}
+  before_script:
+    # helm init
+    - helm --help
+    - helm init --stable-repo-url https://charts.helm.sh/stable ${HELM_CLI_OPTS} || true # FIXME "getsockopt: connection refused"
+    #
+    # helm/repo/add.ba.sh
+    - helm repo add ${HELM_REPO_NAME} ${HELM_REPO_URL} ${HELM_CLI_OPTS}
+    - helm repo list ${HELM_CLI_OPTS}
+
+
+.helm:lint:
+  stage: lint # (unit) test
+# extends: .helm:setup # FIXME
+  script:
+    - helm inspect chart ${HELM_CHART} ${HELM_CLI_OPTS}
+    - helm lint ${HELM_CHART} ${HELM_CLI_OPTS}
+    - helm dependency update ${HELM_CHART} ${HELM_CLI_OPTS}
+
+
+.helm:publish: # TODO? RENAME?
+  stage: publish
+# extends:
+#   - .helm:setup # FIXME
+#   - .only:tags # TODO?
+  script:
+    - helm inspect chart ${HELM_CHART} ${HELM_CLI_OPTS}
+    - helm dependency update ${HELM_CHART} ${HELM_CLI_OPTS}
+    #
+    # package
+    # TODO? add --destination ./dist
+    # TODO? add --version string (part of tag perhaps?)
+    - mkdir -p dist
+    - helm package ${HELM_CHART} ${HELM_CLI_OPTS} --destination ./dist
+    #
+    # get tar filename # TODO simplify
+    - chart_name=$(helm inspect chart ./ | grep 'name:' | tail -n 1 | awk '{print$2}')
+    - chart_version=$(helm inspect chart ./ | grep 'version:' | awk '{print$2}')
+    - filename="dist/${chart_name}-${chart_version}.tgz"
+    #
+    # publish to artifactory
+    - curl --user "${ARTIFACTORY_REPO_USER}:${ARTIFACTORY_REPO_PASS}" --upload-file "${filename}" --fail ${ARTIFACTORY_REPO_URL}
+    - helm repo update ${HELM_CLI_OPTS}
+  after_script:
+    - ls -la ./dist
+  artifacts:
+    paths:
+      - dist/

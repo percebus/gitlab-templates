@@ -1,0 +1,6 @@
+
+.test:reports:junit:
+  artifacts:
+    when: always
+    reports:
+      junit: junit.xml

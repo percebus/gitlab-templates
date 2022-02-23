@@ -1,0 +1,93 @@
+#include:
+# - local: gitlab/gitlab/rules.yml
+# - local: gitlab/dotnet/common.yml
+# - local: gitlab/dotnet/nuget.yml
+
+
+.Platform:Any:
+  variables:
+    PLATFORM: Any CPU
+
+.Platform:x64:
+  variables:
+    PLATFORM: x64
+
+.Platform:x86:
+  variables:
+    PLATFORM: x86
+
+.Platform:Mixed:
+  variables:
+    PLATFORM: Mixed Platforms
+
+
+.MSBuild:
+  stage: build
+  needs:
+    - NuGet restore
+  extends:
+    - .image:dotnet:framework:sdk
+#   - .NuGet:packages:cache # TODO? or XXX?
+    # Default settings. Can (and should) be overwritten
+    - .Platform:Any
+    - .Configuration:Release
+  script:
+    - MSBuild.exe ${SOLUTION} /p:Platform="${PLATFORM}" /p:Configuration=${CONFIGURATION}
+  artifacts:
+    paths:
+      - '**/bin/**'
+    exclude:
+      - '**/*.pdb'
+
+.MSBuild:Debug:
+  extends:
+    - .MSBuild
+    - .Configuration:Debug
+
+.MSBuild:Release:
+  extends:
+    - .only:refs:master
+    - .MSBuild
+    - .Configuration:Release
+
+
+.VSTest.Console:
+  stage: test
+  extends:
+    - .image:dotnet:framework:sdk
+    - .Configuration:Debug
+  needs:
+    - MSBuild:Debug
+  script: # NOTE Should get overwritten by the actual VSTest.Console {DLL}
+    - VSTest.Console /ListLoggers
+    # The following Test Logger Add-Ins are available:
+    # * Trx  : Microsoft.VisualStudio.TestPlatform.Extensions.TrxLogger.TrxLogger
+    # * Html : Microsoft.VisualStudio.TestPlatform.Extensions.HtmlLogger.HtmlLogger
+    # * Blame: Microsoft.TestPlatform.Extensions.BlameDataCollector.BlameLogger
+  artifacts:
+    when: always
+    paths:
+      - '**/TestResults/'
+
+
+.exe:
+  stage: run
+  extends:
+    - .image:dotnet:framework:sdk
+    - .WORKSPACE:bin
+# script:
+#   - ${EXECUTABLE}
+
+.exe:Debug:
+  extends:
+    - .exe
+    - .Configuration:Debug
+  needs:
+    - MSBuild:Debug
+
+.exe:Release:
+  extends:
+    - .exe
+    - .Configuration:Release
+  needs:
+    - MSBuild:Release

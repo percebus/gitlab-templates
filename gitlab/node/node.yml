@@ -1,0 +1,18 @@
+#include:
+# - local: gitlab/image/linux/node.yml
+
+# NOTE: This is anything node
+# npm, yarn, webpack or any other package manager can extend from here
+.node:
+  extends: .image:node
+
+
+.node:modules:artifacts:
+  artifacts:
+    paths:
+      - node_modules/
+
+.node:modules:cache:local:
+  cache:
+    paths:
+      - node_modules/

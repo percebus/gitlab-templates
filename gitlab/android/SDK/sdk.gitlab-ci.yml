@@ -1,0 +1,10 @@
+#include:
+# - local: gitlab/git/setup.gitlab-ci.yml
+# - local: gitlab/android/SDK/sdk.yml
+
+
+.android:SDK:tools:ssh:
+  extends: .android:SDK:tools
+  before_script:
+    - !reference ['.git:re:ssh'       , before_script]
+    - !reference ['.android:SDK:tools', before_script]

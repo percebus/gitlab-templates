@@ -1,0 +1,35 @@
+#include:
+# - local: gitlab/gitlab/rules.yml
+
+
+.pages:public:
+  stage: public
+# extends: .only:refs:master # TODO? or XXX?
+  only:                      # XXX?
+    refs:
+      - master
+# variables:
+#   FOLDER: {your artifacts}
+  before_script:
+    - rm ./public -rf
+  script:
+    - mv ${FOLDER} ./public/
+  artifacts:
+    when: always
+    paths:
+      - public/
+
+.pages:public:docs:
+  extends: .pages:public
+  variables:
+    FOLDER: ./docs/
+
+.pages:public:dist:
+  extends: .pages:public
+  variables:
+    FOLDER: ./dist/
+
+.pages:public:test:coverage:
+  extends: .pages:public
+  variables:
+    FOLDER: ./test/coverage/

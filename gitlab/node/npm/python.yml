@@ -1,0 +1,9 @@
+#include:
+# - local: gitlab/image/linux/python.yml
+# - local: gitlab/node/npm/npm.yml
+
+
+.node:npm:setup:python:
+  extends:
+    - .node:npm:setup
+    - .image:python-nodejs # image overwrite

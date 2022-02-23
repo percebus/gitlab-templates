@@ -1,0 +1,9 @@
+#include:
+# - local: gitlab/helm/v2/helm.yml
+
+.helm:setup:install:
+  extends:
+    - .helm
+  before_script:
+    - !reference ['.helm:install', before_script]
+    - !reference ['.helm:setup'  , before_script]

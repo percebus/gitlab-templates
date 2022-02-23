@@ -1,0 +1,35 @@
+#include:
+# - local: gitlab/gitlab/rules.yml
+# - local: gitlab/image/dotnet.yml
+# - local: gitlab/dotnet/common.yml
+
+
+.dotnet:restore:
+  stage: packages # TODO? RENAME?
+  extends: .image:dotnet:core:sdk
+  script: dotnet restore ${SOLUTION}
+  artifacts:
+    untracked: true # '**/obj/**'
+
+
+.dotnet:build:
+  stage: build
+  extends: .image:dotnet:core:sdk
+  needs:
+    - dotnet restore
+  script:
+    - dotnet build ${SOLUTION} --configuration ${CONFIGURATION}
+  artifacts:
+    paths:
+      - '**/bin/**'
+
+.dotnet:build:Debug:
+  extends:
+    - .dotnet:build
+    - .Configuration:Debug
+
+.dotnet:build:Release:
+  extends:
+    - .only:refs:master
+    - .dotnet:build
+    - .Configuration:Release

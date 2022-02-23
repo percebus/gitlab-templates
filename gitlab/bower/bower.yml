@@ -1,0 +1,28 @@
+#include:
+# - local: gitlab/git/setup.gitlab-ci.yml
+
+
+.bower:components:cache:
+  cache:
+    paths:
+      - bower_components/
+
+.bower:components:artifacts:
+  artifacts:
+    paths:
+      - bower_components/
+
+
+.bower:
+# image: # TODO?
+  extends:
+#   - .bower:components:cache # TODO?
+    - .git:re:ssh
+
+.bower:install:
+  extends:
+    - .bower
+    - .bower:components:artifacts
+  before_script:
+#   - !reference ['.git:re:ssh', before_script] # Implement in target script if needed
+    - bower install --allow-root

@@ -1,0 +1,5 @@
+
+.image:docker:
+  image: docker:19.03.5
+  services:
+    - docker:19.03.5-dind
